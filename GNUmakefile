@@ -1,5 +1,4 @@
-NAME=scaffolding
-BINARY=packer-plugin-${NAME}
+BINARY=packer-plugin-cue
 
 COUNT?=1
 TEST?=$(shell go list ./...)
