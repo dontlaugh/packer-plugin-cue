@@ -1,4 +1,4 @@
-module packer-plugin-scaffolding
+module packer-plugin-cue
 
 go 1.17
 

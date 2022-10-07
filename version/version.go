@@ -1,4 +1,4 @@
-package version
+package packercue
 
 import (
 	"github.com/hashicorp/packer-plugin-sdk/version"

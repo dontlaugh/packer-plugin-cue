@@ -1,6 +1,6 @@
 //go:generate packer-sdc mapstructure-to-hcl2 -type Config
 
-package scaffolding
+package packercue
 
 import (
 	"context"
@@ -14,6 +14,9 @@ import (
 
 type Config struct {
 	MockOption string `mapstructure:"mock"`
+	ModuleRoot string `mapstructure:"module"`
+	Package string `mapstructure:"package"`
+	Expression string `mapstructure:"expression"`
 	ctx        interpolate.Context
 }
 
