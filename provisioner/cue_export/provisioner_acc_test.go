@@ -1,4 +1,4 @@
-package packercue
+package cue_export
 
 import (
 	_ "embed"
@@ -17,6 +17,7 @@ var testProvisionerHCL2Basic string
 
 // Run with: PACKER_ACC=1 go test -count 1 -v ./provisioner/scaffolding/provisioner_acc_test.go  -timeout=120m
 func TestAccScaffoldingProvisioner(t *testing.T) {
+	t.Skip()
 	testCase := &acctest.PluginTestCase{
 		Name: "scaffolding_provisioner_basic_test",
 		Setup: func() error {

@@ -1,40 +1,34 @@
 packer {
   required_plugins {
-    scaffolding = {
+    cue = {
       version = ">=v0.1.0"
-      source  = "github.com/hashicorp/scaffolding"
+      source  = "github.com/greymatter-io/cue"
     }
+
+    lxd = {
+      version = ">=1.0.0"
+      source  = "github.com/hashicorp/lxd"
+    }
+
   }
 }
 
-source "scaffolding-my-builder" "foo-example" {
-  mock = local.foo
-}
 
-source "scaffolding-my-builder" "bar-example" {
-  mock = local.bar
+source "lxd" "ubuntu_2204" {
+  image = "images:ubuntu/22.04/cloud"
 }
 
 build {
   sources = [
-    "source.scaffolding-my-builder.foo-example",
+    "source.lxd.ubuntu_2204",
   ]
 
-  source "source.scaffolding-my-builder.bar-example" {
-    name = "bar"
+  provisioner "cue-export" {
+    module_root = "."
+    dir = "."
+    package = "hello"
+    expression = "world"
+    dest_dir = "/root/foo"
   }
 
-  provisioner "scaffolding-my-provisioner" {
-    only = ["scaffolding-my-builder.foo-example"]
-    mock = "foo: ${local.foo}"
-  }
-
-  provisioner "scaffolding-my-provisioner" {
-    only = ["scaffolding-my-builder.bar"]
-    mock = "bar: ${local.bar}"
-  }
-
-  post-processor "scaffolding-my-post-processor" {
-    mock = "post-processor mock-config"
-  }
 }
