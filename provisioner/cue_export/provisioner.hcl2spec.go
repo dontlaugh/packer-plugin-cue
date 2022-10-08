@@ -18,6 +18,7 @@ type FlatConfig struct {
 	Dir          *string  `mapstructure:"dir" cty:"dir" hcl:"dir"`
 	DestFile     *string  `mapstructure:"dest" cty:"dest" hcl:"dest"`
 	DestFileMode *int     `mapstructure:"file_mode" cty:"file_mode" hcl:"file_mode"`
+	Serialize    *string  `mapstructure:"serialize" cty:"serialize" hcl:"serialize"`
 }
 
 // FlatMapstructure returns a new FlatConfig.
@@ -40,6 +41,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"dir":        &hcldec.AttrSpec{Name: "dir", Type: cty.String, Required: false},
 		"dest":       &hcldec.AttrSpec{Name: "dest", Type: cty.String, Required: false},
 		"file_mode":  &hcldec.AttrSpec{Name: "file_mode", Type: cty.Number, Required: false},
+		"serialize":  &hcldec.AttrSpec{Name: "serialize", Type: cty.String, Required: false},
 	}
 	return s
 }

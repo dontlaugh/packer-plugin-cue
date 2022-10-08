@@ -4,13 +4,17 @@ package cue_export
 import (
 	"bytes"
 	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"log"
+	"os"
+
 	"cuelang.org/go/cue"
 	"cuelang.org/go/cue/cuecontext"
 	"cuelang.org/go/cue/load"
-	"fmt"
-	"os"
-
-	_ "cuelang.org/go/cue/load"
+	"github.com/BurntSushi/toml"
+	"github.com/goccy/go-yaml"
 	"github.com/hashicorp/hcl/v2/hcldec"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 	"github.com/hashicorp/packer-plugin-sdk/template/config"
@@ -34,8 +38,8 @@ type Config struct {
 	DestFile     string `mapstructure:"dest"`
 	DestFileMode int    `mapstructure:"file_mode"`
 
-	// CUE output type?
-	// todo
+	// One of yaml, toml, json
+	Serialize string `mapstructure:"serialize"`
 
 	// Packer internals
 	ctx interpolate.Context
@@ -62,6 +66,21 @@ func (p *Provisioner) Prepare(raws ...interface{}) error {
 	if err != nil {
 		return err
 	}
+
+	if ser := p.config.Serialize; ser != "" {
+		validSerializers := []string{"json", "yaml", "toml"}
+		var isValid bool
+		for _, s := range validSerializers {
+			if ser == s {
+				isValid = true
+			}
+		}
+		if !isValid {
+			return fmt.Errorf("%s is not valid; serialize field, if present, must be one of: toml, json, yaml", p.config.Serialize)
+		}
+
+	}
+
 	return nil
 }
 
@@ -71,11 +90,11 @@ func (p *Provisioner) Provision(_ context.Context, ui packer.Ui, comm packer.Com
 
 	// load the cue package
 	instances := load.Instances([]string{}, &load.Config{
-		Context:    nil,
+		Context: nil,
 		// ModuleRoot: p.config.ModuleRoot, // what do we put here?
-		Module:     "github.com/dontlaugh/packer-plugin-cue/example",
-		Package:    p.config.Package,
-		Dir:        p.config.Dir, // usually same as ModuleRoot?
+		Module:  "github.com/dontlaugh/packer-plugin-cue/example",
+		Package: p.config.Package,
+		Dir:     p.config.Dir, // usually same as ModuleRoot?
 		// What to do here?
 		//Tags:        p.config.Tags,
 		//TagVars:     p.config.TagVars,
@@ -100,10 +119,19 @@ func (p *Provisioner) Provision(_ context.Context, ui packer.Ui, comm packer.Com
 		expr := cue.ParsePath(p.config.Expression)
 		val = val.LookupPath(expr)
 	}
+	log.Printf("cue kind: %v\n", val.Kind())
 	switch val.Kind() {
 	case cue.BytesKind:
 		// we render bytes directly to a file
-		panic("not implemented ")
+		log.Printf("bytes kind found\n")
+		bytesValue, err := val.Bytes()
+		if err != nil {
+			return err
+		}
+		buf := bytes.NewBuffer(bytesValue)
+		if err := comm.Upload(p.config.DestFile, buf, nil); err != nil {
+			return err
+		}
 	case cue.StringKind:
 		// we render string to a file, also
 		stringValue, err := val.String()
@@ -114,14 +142,53 @@ func (p *Provisioner) Provision(_ context.Context, ui packer.Ui, comm packer.Com
 		if err := comm.Upload(p.config.DestFile, buf, nil); err != nil {
 			return err
 		}
-	case cue.StructKind, cue.ListKind:
+	case cue.StructKind:
+		if p.config.Serialize == "" {
+
+			ui.Error("cue expression yields a struct type, but no serializer configured")
+			return errors.New("no serializer configured")
+		}
+		var msi map[string]interface{}
+		if err := val.Decode(&msi); err != nil {
+			ui.Error("could not decode to map[string]interface{}")
+			return err
+		}
+		var buf = &bytes.Buffer{}
 		// struct or list can be serialized directly
 		// to json, yaml, toml, etc.
-		panic("not implemented ")
+		switch p.config.Serialize {
+		case "yaml":
+			bytesVal, err := yaml.Marshal(msi)
+			if err != nil {
+				return err
+			}
+			buf = bytes.NewBuffer(bytesVal)
+		case "toml":
+			if err := toml.NewEncoder(buf).Encode(msi); err != nil {
+				return err
+			}
+		case "json":
+			// todo: configurable indentation?
+			bytesVal, err := json.MarshalIndent(msi, "", "    ")
+			if err != nil {
+				return err
+			}
+			buf = bytes.NewBuffer(bytesVal)
+		default:
+			panic("invalid serialize type") // should never happen
+		}
+
+		_ = buf
+		// We've decoded our struct into a buf
+
+		if err := comm.Upload(p.config.DestFile, buf, nil); err != nil {
+			return err
+		}
+	case cue.ListKind:
+		panic("not implemented")
 	default:
 		// BottomKind, not a concrete value?
 		return fmt.Errorf("unsuppored CUE kind: %v", val.Kind())
-
 	}
 
 	return nil

@@ -33,4 +33,39 @@ build {
     dest       = "/root/foo"
   }
 
+  provisioner "cue-export" {
+    module     = "."
+    dir        = "."
+    package    = "hello"
+    expression = "expect_bytes"
+    dest       = "/root/expect_bytes"
+  }
+
+
+  provisioner "cue-export" {
+    module     = "."
+    dir        = "."
+    package    = "hello"
+    expression = "expect_json"
+    serialize = "json"
+    dest       = "/root/expect_json"
+  }
+
+  provisioner "cue-export" {
+    module     = "."
+    dir        = "."
+    package    = "hello"
+    expression = "expect_yaml"
+    serialize = "yaml"
+    dest       = "/root/expect_yaml"
+  }
+
+  provisioner "cue-export" {
+    module     = "."
+    dir        = "."
+    package    = "hello"
+    expression = "expect_toml"
+    serialize = "toml"
+    dest       = "/root/expect_toml"
+  }
 }
