@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"cuelang.org/go/cue"
+	"cuelang.org/go/cue/build"
 	"cuelang.org/go/cue/cuecontext"
 	"cuelang.org/go/cue/load"
 	"github.com/BurntSushi/toml"
@@ -54,6 +55,10 @@ type Provisioner struct {
 
 	// Serialization methods set this buffer, which is then passed to Upload
 	buf *bytes.Buffer
+
+	// cue instanances and value created in Prepare and used in Provision
+	instances []*build.Instance
+	value     cue.Value
 }
 
 // ConfigSpec is called by Packer to get the HCL version of our config.
@@ -89,15 +94,6 @@ func (p *Provisioner) Prepare(raws ...interface{}) error {
 		}
 	}
 
-	//
-	// TODO: load CUE instances here instead of in Provision()?
-	//
-
-	return nil
-}
-
-func (p *Provisioner) Provision(_ context.Context, ui packer.Ui, comm packer.Communicator, _generatedData map[string]interface{}) error {
-	ui.Say("cue provisioner")
 	ctx := cuecontext.New()
 
 	// load the cue package
@@ -121,6 +117,7 @@ func (p *Provisioner) Provision(_ context.Context, ui packer.Ui, comm packer.Com
 		Overlay:     nil,
 		Stdin:       nil,
 	})
+	p.instances = instances
 	if err := instances[0].Err; err != nil {
 		return fmt.Errorf("loading instances: %w", err)
 	}
@@ -133,6 +130,17 @@ func (p *Provisioner) Provision(_ context.Context, ui packer.Ui, comm packer.Com
 		expr := cue.ParsePath(p.config.Expression)
 		val = val.LookupPath(expr)
 	}
+	p.value = val
+	return nil
+}
+
+func (p *Provisioner) Provision(_ context.Context, ui packer.Ui, comm packer.Communicator, _generatedData map[string]interface{}) error {
+	ui.Say(fmt.Sprintf("cue-export provisioning file %s", p.config.DestFile))
+
+	ui.Message(fmt.Sprintf("cue module: %s; package: %s; expression: %s",
+		p.config.ModuleRoot, p.config.Package, p.config.Expression))
+
+	val := p.value
 
 	log.Printf("cue kind: %v\n", val.Kind())
 	switch val.Kind() {
@@ -179,8 +187,8 @@ func (p *Provisioner) Provision(_ context.Context, ui packer.Ui, comm packer.Com
 		return fmt.Errorf("unsuppored CUE kind: %v", val.Kind())
 	}
 
-    // Our buf has been filled; Upload reads it into a remote file.
-    // TODO(cm) set mode?
+	// Our buf has been filled; Upload reads it into a remote file.
+	// TODO(cm) set mode?
 	if err := comm.Upload(p.config.DestFile, p.buf, nil); err != nil {
 		return err
 	}
