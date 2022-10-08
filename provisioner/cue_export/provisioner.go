@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -21,11 +20,15 @@ import (
 	"github.com/hashicorp/packer-plugin-sdk/template/interpolate"
 )
 
+const pluginType = "packer.provisioner.cue"
+
 // Config models our CUE export provisioner config.
 //
 // Users are expected to provide a combination of package, module root,
-// expression, etc. that yields a string that becomes a file on disk.
+// expression, etc. that selects a Value. That Value becomes a file on disk
+// during the Packer build.
 type Config struct {
+
 	// CUE module params
 	ModuleRoot string   `mapstructure:"module"`
 	Package    string   `mapstructure:"package"`
@@ -38,17 +41,22 @@ type Config struct {
 	DestFile     string `mapstructure:"dest"`
 	DestFileMode int    `mapstructure:"file_mode"`
 
-	// One of yaml, toml, json
+	// Must be one of yaml, toml, json
 	Serialize string `mapstructure:"serialize"`
 
 	// Packer internals
 	ctx interpolate.Context
 }
 
+// Provisioner implements the Packer plugin's interface.
 type Provisioner struct {
 	config Config
+
+	// Serialization methods set this buffer, which is then passed to Upload
+	buf *bytes.Buffer
 }
 
+// ConfigSpec is called by Packer to get the HCL version of our config.
 func (p *Provisioner) ConfigSpec() hcldec.ObjectSpec {
 	return p.config.FlatMapstructure().HCL2Spec()
 }
@@ -56,7 +64,7 @@ func (p *Provisioner) ConfigSpec() hcldec.ObjectSpec {
 // Prepare loads and validates our config(s). Configs should be merged in some sensible way.
 func (p *Provisioner) Prepare(raws ...interface{}) error {
 	err := config.Decode(&p.config, &config.DecodeOpts{
-		PluginType:         "packer.provisioner.cue",
+		PluginType:         pluginType,
 		Interpolate:        true,
 		InterpolateContext: &p.config.ctx,
 		InterpolateFilter: &interpolate.RenderFilter{
@@ -67,6 +75,7 @@ func (p *Provisioner) Prepare(raws ...interface{}) error {
 		return err
 	}
 
+	// Ensure serialize has a valid value.
 	if ser := p.config.Serialize; ser != "" {
 		validSerializers := []string{"json", "yaml", "toml"}
 		var isValid bool
@@ -76,10 +85,13 @@ func (p *Provisioner) Prepare(raws ...interface{}) error {
 			}
 		}
 		if !isValid {
-			return fmt.Errorf("%s is not valid; serialize field, if present, must be one of: toml, json, yaml", p.config.Serialize)
+			return fmt.Errorf("'%s' is not valid; serialize field, if present, must be one of: toml, json, yaml", p.config.Serialize)
 		}
-
 	}
+
+	//
+	// TODO: load CUE instances here instead of in Provision()?
+	//
 
 	return nil
 }
@@ -92,12 +104,14 @@ func (p *Provisioner) Provision(_ context.Context, ui packer.Ui, comm packer.Com
 	instances := load.Instances([]string{}, &load.Config{
 		Context: nil,
 		// ModuleRoot: p.config.ModuleRoot, // what do we put here?
-		Module:  "github.com/dontlaugh/packer-plugin-cue/example",
+		// Module:  "github.com/dontlaugh/packer-plugin-cue/example",
 		Package: p.config.Package,
 		Dir:     p.config.Dir, // usually same as ModuleRoot?
 		// What to do here?
 		//Tags:        p.config.Tags,
 		//TagVars:     p.config.TagVars,
+		//
+		// Do we need configs for these other values?
 		AllCUEFiles: false,
 		Tests:       false,
 		Tools:       false,
@@ -119,77 +133,100 @@ func (p *Provisioner) Provision(_ context.Context, ui packer.Ui, comm packer.Com
 		expr := cue.ParsePath(p.config.Expression)
 		val = val.LookupPath(expr)
 	}
+
 	log.Printf("cue kind: %v\n", val.Kind())
 	switch val.Kind() {
+
+	// BytesKind is rendered as-is to a file
 	case cue.BytesKind:
-		// we render bytes directly to a file
-		log.Printf("bytes kind found\n")
 		bytesValue, err := val.Bytes()
 		if err != nil {
 			return err
 		}
-		buf := bytes.NewBuffer(bytesValue)
-		if err := comm.Upload(p.config.DestFile, buf, nil); err != nil {
+		if err := p.serializeBytes(bytesValue); err != nil {
 			return err
 		}
+
+		// StringKind is rendered as-is to a file, also
 	case cue.StringKind:
-		// we render string to a file, also
 		stringValue, err := val.String()
 		if err != nil {
 			return err
 		}
-		buf := bytes.NewBufferString(stringValue)
-		if err := comm.Upload(p.config.DestFile, buf, nil); err != nil {
+		if err := p.serializeString(stringValue); err != nil {
 			return err
 		}
-	case cue.StructKind:
-		if p.config.Serialize == "" {
 
-			ui.Error("cue expression yields a struct type, but no serializer configured")
-			return errors.New("no serializer configured")
-		}
+	// StructKind uses a serializer to render json, toml, or yaml
+	case cue.StructKind:
 		var msi map[string]interface{}
 		if err := val.Decode(&msi); err != nil {
 			ui.Error("could not decode to map[string]interface{}")
 			return err
 		}
-		var buf = &bytes.Buffer{}
-		// struct or list can be serialized directly
-		// to json, yaml, toml, etc.
-		switch p.config.Serialize {
-		case "yaml":
-			bytesVal, err := yaml.Marshal(msi)
-			if err != nil {
-				return err
-			}
-			buf = bytes.NewBuffer(bytesVal)
-		case "toml":
-			if err := toml.NewEncoder(buf).Encode(msi); err != nil {
-				return err
-			}
-		case "json":
-			// todo: configurable indentation?
-			bytesVal, err := json.MarshalIndent(msi, "", "    ")
-			if err != nil {
-				return err
-			}
-			buf = bytes.NewBuffer(bytesVal)
-		default:
-			panic("invalid serialize type") // should never happen
-		}
 
-		_ = buf
-		// We've decoded our struct into a buf
-
-		if err := comm.Upload(p.config.DestFile, buf, nil); err != nil {
+		if err := p.serializeStruct(msi); err != nil {
 			return err
 		}
+
+	// ListKind isn't implemented, but should render like StructKind?
 	case cue.ListKind:
 		panic("not implemented")
+
+	// BottomKind, or anything else, is unsupported. Perhaps the expression
+	// does not render a concrete value.
 	default:
-		// BottomKind, not a concrete value?
 		return fmt.Errorf("unsuppored CUE kind: %v", val.Kind())
 	}
+
+    // Our buf has been filled; Upload reads it into a remote file.
+    // TODO(cm) set mode?
+	if err := comm.Upload(p.config.DestFile, p.buf, nil); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *Provisioner) serializeString(s string) error {
+	buf := bytes.NewBufferString(s)
+	p.buf = buf
+	return nil
+}
+
+func (p *Provisioner) serializeBytes(b []byte) error {
+	buf := bytes.NewBuffer(b)
+	p.buf = buf
+	return nil
+}
+
+func (p *Provisioner) serializeStruct(msi map[string]interface{}) error {
+	var buf = &bytes.Buffer{}
+	switch p.config.Serialize {
+	case "yaml":
+		bytesVal, err := yaml.Marshal(msi)
+		if err != nil {
+			return err
+		}
+		buf = bytes.NewBuffer(bytesVal)
+
+	case "toml":
+		if err := toml.NewEncoder(buf).Encode(msi); err != nil {
+			return err
+		}
+
+	case "json":
+		bytesVal, err := json.MarshalIndent(msi, "", "    ")
+		if err != nil {
+			return err
+		}
+		buf = bytes.NewBuffer(bytesVal)
+
+	default:
+		panic("invalid serialize type") // should never happen
+	}
+
+	p.buf = buf
 
 	return nil
 }

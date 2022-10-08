@@ -1,11 +1,9 @@
 packer {
   required_plugins {
-
     lxd = {
       version = ">=1.0.0"
       source  = "github.com/hashicorp/lxd"
     }
-
   }
 }
 
@@ -21,7 +19,7 @@ locals {
 build {
   source "lxd.ubuntu_2204" {
     name           = "cue-test"
-    output_image         = "cue-test"
+    output_image   = "cue-test"
     container_name = "cue-test-${local.ts}"
   }
 
@@ -47,7 +45,7 @@ build {
     dir        = "."
     package    = "hello"
     expression = "expect_json"
-    serialize = "json"
+    serialize  = "json"
     dest       = "/root/expect_json"
   }
 
@@ -56,7 +54,7 @@ build {
     dir        = "."
     package    = "hello"
     expression = "expect_yaml"
-    serialize = "yaml"
+    serialize  = "yaml"
     dest       = "/root/expect_yaml"
   }
 
@@ -65,7 +63,7 @@ build {
     dir        = "."
     package    = "hello"
     expression = "expect_toml"
-    serialize = "toml"
+    serialize  = "toml"
     dest       = "/root/expect_toml"
   }
 }
