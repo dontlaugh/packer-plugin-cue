@@ -14,6 +14,20 @@ Provisioners:
 
 ## Example Usage
 
+Add this plugin to `required_plugins`
+
+```hcl
+packer {
+  required_plugins {
+    cue = {
+      version = ">=0.1.0"
+      source = "github.com/dontlaugh/cue"
+    }
+  }
+}
+
+```
+
 Write the data yielded by the expression `world` in package `world` to **/tmp/some-file**
 
 ```hcl
