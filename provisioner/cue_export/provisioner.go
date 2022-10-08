@@ -32,7 +32,7 @@ type Config struct {
 
 	// Destination file; TODO(cm) rhyme w/ Packer's file prov.
 	DestFile     string `mapstructure:"dest"`
-	DestFileMode uint
+	DestFileMode int    `mapstructure:"file_mode"`
 
 	// CUE output type?
 	// todo
@@ -72,8 +72,8 @@ func (p *Provisioner) Provision(_ context.Context, ui packer.Ui, comm packer.Com
 	// load the cue package
 	instances := load.Instances([]string{}, &load.Config{
 		Context:    nil,
-		ModuleRoot: p.config.ModuleRoot,
-		Module:     "",
+		// ModuleRoot: p.config.ModuleRoot, // what do we put here?
+		Module:     "github.com/dontlaugh/packer-plugin-cue/example",
 		Package:    p.config.Package,
 		Dir:        p.config.Dir, // usually same as ModuleRoot?
 		// What to do here?

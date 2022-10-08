@@ -11,7 +11,7 @@ import (
 
 func main() {
 	pps := plugin.NewSet()
-	pps.RegisterProvisioner("cue-export", new(export.Provisioner))
+	pps.RegisterProvisioner("export", new(export.Provisioner))
 	pps.SetVersion(version.PluginVersion)
 	err := pps.Run()
 	if err != nil {
