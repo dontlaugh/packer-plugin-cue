@@ -59,7 +59,7 @@ Invoking `cue export -p systemd ./my_service.cue` gives you the entire package a
 _Note: We've elided most of the unit file's base64 string here._
 
 Providing `--out binary` and `-e unit_file` let's us select the `unit_file`
-field and render it, with the value of `config_file` interpolated.
+field and render it. The value of `config_file` is interpolated.
 
 ```
 $ cue export -p systemd -e unit_file --out binary ./my_service.cue
@@ -82,4 +82,28 @@ The previous examples use the `cue` CLI, which you should definitely download
 and experiment with if you are unfamiliar with CUE. This plugin, however, uses
 CUE as a Go library.
 
+### But wait, there's more!
+
+The `cue-export` provisioner doesn't need a string or binary template to write
+files. If the package (with optional expression) evaluates  to a string, number,
+or struct type, this plugin does the following
+
+* String and number types are written as a single-line file to `dest`
+* Struct types must be given a `serialize` config, one of "json", "yaml",
+  or "toml". The entire struct will be serialized in tha format.
+
+A quick example of a struct rendered to yaml
+
+```hcl
+provisioner "cue-export" {
+    module     = "."
+    dir        = "."
+    package    = "prometheus"
+    expression = "config_yaml"
+    serialize  = "yaml"
+    dest       = "/tmp/prometheus.yaml"
+}
+```
+
+If your expression evaluates to a struct and no serializer is set, it's an error.
 
