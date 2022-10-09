@@ -1,6 +1,6 @@
 # packer-plugin-cue
 
-A packer plugin that writes files to the image your provisioning, based
+A packer plugin that writes files to the image you're provisioning, based
 on values extracted from a CUE module.
 
 A Packer data provider is TODO.
