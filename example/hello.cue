@@ -1,7 +1,8 @@
 package hello
 
-world: "yes!"
 
+
+world: string | "yes!" @tag(world,type=string)
 
 expect_bytes: '''
 #!/bin/bash

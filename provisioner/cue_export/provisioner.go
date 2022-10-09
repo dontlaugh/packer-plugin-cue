@@ -35,7 +35,7 @@ type Config struct {
 	Package    string   `mapstructure:"package"`
 	Expression string   `mapstructure:"expression"`
 	Tags       []string `mapstructure:"tags"`
-	TagVars    []string `mapstructure:"tag_vars"`
+	TagVars    []string `mapstructure:"tag_vars"` // remove?
 	Dir        string   `mapstructure:"dir"`
 
 	// Destination file; TODO(cm) rhyme w/ Packer's file prov.
@@ -104,7 +104,7 @@ func (p *Provisioner) Prepare(raws ...interface{}) error {
 		Package: p.config.Package,
 		Dir:     p.config.Dir, // usually same as ModuleRoot?
 		// What to do here?
-		//Tags:        p.config.Tags,
+		Tags:        p.config.Tags,
 		//TagVars:     p.config.TagVars,
 		//
 		// Do we need configs for these other values?
@@ -155,7 +155,7 @@ func (p *Provisioner) Provision(_ context.Context, ui packer.Ui, comm packer.Com
 			return err
 		}
 
-		// StringKind is rendered as-is to a file, also
+	// StringKind is rendered as-is to a file, also
 	case cue.StringKind:
 		stringValue, err := val.String()
 		if err != nil {
@@ -179,6 +179,7 @@ func (p *Provisioner) Provision(_ context.Context, ui packer.Ui, comm packer.Com
 
 	// ListKind isn't implemented, but should render like StructKind?
 	case cue.ListKind:
+
 		panic("not implemented")
 
 	// BottomKind, or anything else, is unsupported. Perhaps the expression

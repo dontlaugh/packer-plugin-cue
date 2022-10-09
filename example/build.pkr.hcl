@@ -24,10 +24,10 @@ build {
   }
 
   provisioner "cue-export" {
-    module     = "."
     dir        = "."
     package    = "hello"
     expression = "world"
+    tags = ["world=no!!!!"]
     dest       = "/root/foo"
   }
 
