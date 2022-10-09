@@ -28,7 +28,7 @@ packer {
 
 ```
 
-Write the data yielded by the expression `world` in package `world` to **/tmp/some-file**
+Write the data yielded by the expression `world` in package `hello` to **/tmp/some-file**
 
 ```hcl
   provisioner "cue-export" {
