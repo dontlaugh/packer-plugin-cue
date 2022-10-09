@@ -20,7 +20,7 @@ Add this plugin to `required_plugins`
 packer {
   required_plugins {
     cue = {
-      version = ">=0.1.0"
+      version = ">=0.2.0"
       source = "github.com/dontlaugh/cue"
     }
   }
