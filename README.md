@@ -72,7 +72,7 @@ Invoking `cue export -p systemd ./my_service.cue` gives you the entire package a
 ```
 _Note: We've elided most of the unit file's base64 string here._
 
-Providing `--out binary` and `-e unit_file` let's us select the `unit_file`
+Providing `--out binary` and `-e unit_file` lets us select the `unit_file`
 field and render it. The value of `config_file` is interpolated.
 
 ```
