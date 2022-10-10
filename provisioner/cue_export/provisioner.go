@@ -31,7 +31,9 @@ const pluginType = "packer.provisioner.cue"
 type Config struct {
 
 	// CUE module params
-	ModuleRoot string   `mapstructure:"module"`
+	ModuleRoot string `mapstructure:"module_root"`
+	Module     string `mapstructure:"module"`
+
 	Package    string   `mapstructure:"package"`
 	Expression string   `mapstructure:"expression"`
 	Tags       []string `mapstructure:"tags"`
@@ -98,13 +100,13 @@ func (p *Provisioner) Prepare(raws ...interface{}) error {
 
 	// load the cue package
 	instances := load.Instances([]string{}, &load.Config{
-		Context: nil,
-		// ModuleRoot: p.config.ModuleRoot, // what do we put here?
-		// Module:  "github.com/dontlaugh/packer-plugin-cue/example",
-		Package: p.config.Package,
-		Dir:     p.config.Dir, // usually same as ModuleRoot?
+		Context:    nil,
+		ModuleRoot: p.config.ModuleRoot, // what do we put here?
+		Module:     p.config.Module,
+		Package:    p.config.Package,
+		Dir:        p.config.Dir, // usually same as ModuleRoot?
 		// What to do here?
-		Tags:        p.config.Tags,
+		Tags: p.config.Tags,
 		//TagVars:     p.config.TagVars,
 		//
 		// Do we need configs for these other values?
