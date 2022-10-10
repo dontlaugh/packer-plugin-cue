@@ -32,13 +32,26 @@ Write the data yielded by the expression `world` in package `hello` to **/tmp/so
 
 ```hcl
   provisioner "cue-export" {
-    module     = "."
     dir        = "."
     package    = "hello"
     expression = "world"
     dest       = "/tmp/some-file"
   }
 ```
+
+## Config Attributes
+
+Provisioners:
+
+`cue-export`
+
+* dir - path to where the CUE evaluation should take place
+* module - (optional) name of module
+* package - (optional) package name, if required to disambiguate
+* expression - (optional) CUE expression that yields a specific package value
+* dest - path to destination file; Note that some Packer builders
+  will not automatically create ancestor directories.
+* tags - (optional) list of strings of the form `key=value`
 
 ## Explanation
 
