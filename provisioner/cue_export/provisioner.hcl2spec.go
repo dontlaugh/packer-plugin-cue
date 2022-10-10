@@ -10,7 +10,8 @@ import (
 // FlatConfig is an auto-generated flat version of Config.
 // Where the contents of a field with a `mapstructure:,squash` tag are bubbled up.
 type FlatConfig struct {
-	ModuleRoot   *string  `mapstructure:"module" cty:"module" hcl:"module"`
+	ModuleRoot   *string  `mapstructure:"module_root" cty:"module_root" hcl:"module_root"`
+	Module       *string  `mapstructure:"module" cty:"module" hcl:"module"`
 	Package      *string  `mapstructure:"package" cty:"package" hcl:"package"`
 	Expression   *string  `mapstructure:"expression" cty:"expression" hcl:"expression"`
 	Tags         []string `mapstructure:"tags" cty:"tags" hcl:"tags"`
@@ -33,15 +34,16 @@ func (*Config) FlatMapstructure() interface{ HCL2Spec() map[string]hcldec.Spec }
 // The decoded values from this spec will then be applied to a FlatConfig.
 func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 	s := map[string]hcldec.Spec{
-		"module":     &hcldec.AttrSpec{Name: "module", Type: cty.String, Required: false},
-		"package":    &hcldec.AttrSpec{Name: "package", Type: cty.String, Required: false},
-		"expression": &hcldec.AttrSpec{Name: "expression", Type: cty.String, Required: false},
-		"tags":       &hcldec.AttrSpec{Name: "tags", Type: cty.List(cty.String), Required: false},
-		"tag_vars":   &hcldec.AttrSpec{Name: "tag_vars", Type: cty.List(cty.String), Required: false},
-		"dir":        &hcldec.AttrSpec{Name: "dir", Type: cty.String, Required: false},
-		"dest":       &hcldec.AttrSpec{Name: "dest", Type: cty.String, Required: false},
-		"file_mode":  &hcldec.AttrSpec{Name: "file_mode", Type: cty.Number, Required: false},
-		"serialize":  &hcldec.AttrSpec{Name: "serialize", Type: cty.String, Required: false},
+		"module_root": &hcldec.AttrSpec{Name: "module_root", Type: cty.String, Required: false},
+		"module":      &hcldec.AttrSpec{Name: "module", Type: cty.String, Required: false},
+		"package":     &hcldec.AttrSpec{Name: "package", Type: cty.String, Required: false},
+		"expression":  &hcldec.AttrSpec{Name: "expression", Type: cty.String, Required: false},
+		"tags":        &hcldec.AttrSpec{Name: "tags", Type: cty.List(cty.String), Required: false},
+		"tag_vars":    &hcldec.AttrSpec{Name: "tag_vars", Type: cty.List(cty.String), Required: false},
+		"dir":         &hcldec.AttrSpec{Name: "dir", Type: cty.String, Required: false},
+		"dest":        &hcldec.AttrSpec{Name: "dest", Type: cty.String, Required: false},
+		"file_mode":   &hcldec.AttrSpec{Name: "file_mode", Type: cty.Number, Required: false},
+		"serialize":   &hcldec.AttrSpec{Name: "serialize", Type: cty.String, Required: false},
 	}
 	return s
 }
