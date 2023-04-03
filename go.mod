@@ -4,15 +4,14 @@ go 1.18
 
 require (
 	cuelang.org/go v0.4.3
-	github.com/goccy/go-yaml v1.9.5
+	github.com/BurntSushi/toml v1.2.0
+	github.com/goccy/go-yaml v1.11.0
 	github.com/hashicorp/hcl/v2 v2.14.1
 	github.com/hashicorp/packer-plugin-sdk v0.3.2
 	github.com/zclconf/go-cty v1.10.0
-	golang.org/x/exp v0.0.0-20221006183845-316c7553db56
 )
 
 require (
-	github.com/BurntSushi/toml v1.2.0 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/armon/go-metrics v0.4.1 // indirect
@@ -72,11 +71,11 @@ require (
 	github.com/ugorji/go/codec v1.2.7 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
-	golang.org/x/crypto v0.0.0-20221005025214-4161e89ecf1b // indirect
-	golang.org/x/net v0.0.0-20221004154528-8021a29435af // indirect
+	golang.org/x/crypto v0.7.0 // indirect
+	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
-	golang.org/x/sys v0.0.0-20221006211917-84dc82d7e875 // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/sys v0.6.0 // indirect
+	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/time v0.0.0-20220922220347-f3bd1da661af // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/genproto v0.0.0-20220930163606-c98284e70a91 // indirect
