@@ -3,7 +3,7 @@ module packer-plugin-cue
 go 1.18
 
 require (
-	cuelang.org/go v0.5.0
+	cuelang.org/go v0.6.0
 	github.com/BurntSushi/toml v1.2.0
 	github.com/goccy/go-yaml v1.9.5
 	github.com/hashicorp/hcl/v2 v2.14.1
@@ -19,11 +19,10 @@ require (
 	github.com/aws/aws-sdk-go v1.44.114 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/cenkalti/backoff/v3 v3.2.2 // indirect
-	github.com/cockroachdb/apd/v2 v2.0.2 // indirect
+	github.com/cockroachdb/apd/v3 v3.2.0 // indirect
 	github.com/emicklei/proto v1.11.0 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/frankban/quicktest v1.14.3 // indirect
-	github.com/golang/glog v1.0.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/uuid v1.3.0 // indirect
@@ -52,7 +51,6 @@ require (
 	github.com/hashicorp/yamux v0.1.1 // indirect
 	github.com/jehiah/go-strftime v0.0.0-20171201141054-1d33003b3869 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
-	github.com/kr/pretty v0.3.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
@@ -65,17 +63,17 @@ require (
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de // indirect
 	github.com/oklog/run v1.1.0 // indirect
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
-	github.com/pkg/errors v0.9.1 // indirect
-	github.com/protocolbuffers/txtpbfmt v0.0.0-20220926135727-61ed6f8e4d6e // indirect
+	github.com/protocolbuffers/txtpbfmt v0.0.0-20230328191034-3462fbc510c0 // indirect
 	github.com/ryanuber/go-glob v1.0.0 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	golang.org/x/crypto v0.0.0-20221005025214-4161e89ecf1b // indirect
-	golang.org/x/net v0.0.0-20221004154528-8021a29435af // indirect
+	golang.org/x/mod v0.9.0 // indirect
+	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
-	golang.org/x/sys v0.0.0-20221006211917-84dc82d7e875 // indirect
-	golang.org/x/text v0.3.8 // indirect
+	golang.org/x/sys v0.6.0 // indirect
+	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/time v0.0.0-20220922220347-f3bd1da661af // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/genproto v0.0.0-20220930163606-c98284e70a91 // indirect
