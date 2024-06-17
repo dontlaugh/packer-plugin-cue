@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	cuelang.org/go v0.7.0
-	github.com/BurntSushi/toml v1.2.0
+	github.com/BurntSushi/toml v1.4.0
 	github.com/goccy/go-yaml v1.9.5
 	github.com/hashicorp/hcl/v2 v2.14.1
 	github.com/hashicorp/packer-plugin-sdk v0.3.2
