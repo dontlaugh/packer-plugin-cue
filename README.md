@@ -117,7 +117,7 @@ or struct type, this plugin does the following
 
 * String and number types are written as a single-line file to `dest`
 * Struct types must be given a `serialize` config, one of "json", "yaml",
-  or "toml". The entire struct will be serialized in tha format.
+  or "toml". The entire struct will be serialized in that format.
 
 A quick example of a struct rendered to yaml
 
